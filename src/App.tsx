@@ -1,9 +1,13 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { z } from "zod";
 
-type FormFields = {
-  email: string;
-  password: string;
-};
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+type FormFields = z.infer<typeof schema>;
 
 function App() {
   const {
@@ -15,13 +19,16 @@ function App() {
     defaultValues: {
       email: "test@gmail.com",
     },
+    resolver: zodResolver(schema),
   });
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      throw new Error();
+
       console.log(data);
+
+      throw new Error();
     } catch (err) {
       setError("root", {
         message: "Email is already taken",
@@ -36,17 +43,7 @@ function App() {
         onSubmit={handleSubmit(onSubmit)}>
         <input
           type="text"
-          {...register("email", {
-            required: "Email is required",
-            //some pattern
-            validate: (value) => {
-              if (!value.includes("@")) {
-                return "Email must include @";
-              }
-
-              return true; //in case when the input if valid you anyway have to return boolean
-            },
-          })}
+          {...register("email")}
           placeholder="Email"
           className="border py-4 rounded px-3 w-96 border-gray-400 outline-none text-gray-600 focus:border-lime-500"
         />
@@ -56,13 +53,7 @@ function App() {
 
         <input
           type="password"
-          {...register("password", {
-            required: "Password is required",
-            minLength: {
-              value: 8,
-              message: "Password must have at least 8 characters",
-            },
-          })}
+          {...register("password")}
           placeholder="Password"
           className="border py-4 rounded px-3 w-96 border-gray-400 outline-none text-gray-600 focus:border-lime-500"
         />
