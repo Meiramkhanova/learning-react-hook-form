@@ -9,11 +9,24 @@ function App() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm<FormFields>();
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormFields>({
+    defaultValues: {
+      email: "test@gmail.com",
+    },
+  });
 
-  const onSubmit: SubmitHandler<FormFields> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      throw new Error();
+      console.log(data);
+    } catch (err) {
+      setError("root", {
+        message: "Email is already taken",
+      });
+    }
   };
 
   return (
@@ -59,9 +72,14 @@ function App() {
 
         <button
           type="submit"
+          disabled={isSubmitting}
           className="border py-4 rounded px-3 w-96 outline-none text-white bg-lime-300 hover:bg-lime-500 cursor-pointer transition-colors duration-300 ease-in-out border-lime-300 hover:border-lime-500">
-          Submit
+          {isSubmitting ? "Loading" : "Submit"}
         </button>
+
+        {errors.root && (
+          <div className="text-red-500">{errors.root.message}</div>
+        )}
       </form>
     </div>
   );
